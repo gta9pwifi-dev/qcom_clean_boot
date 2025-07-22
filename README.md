@@ -4,16 +4,12 @@ When you unlock the bootloader on Android devices, you're greeted by an annoying
 
 > ⚠️ **"Your device software can't be trusted..."**
 
-This project focuses on removing or replacing that splash screen, using methods specific to different chipsets (MediaTek).
-
----
 
 ## Current Status
 
-* **MediaTek**: Works. Tested on the Galaxy A14 5G (MT6833).
-* **Qualcomm**: In progress on the Galaxy Tab A9+ Wi-Fi (gta9pwifi, SM-X210). On this Qualcomm variant, splash assets are hidden inside a UEFI firmware volume (`imagefv.elf`), making it trickier than MediaTek’s simpler TAR-based partitions.
+* **MediaTek**: Works. Tested on the Galaxy A14 5G (MT6833)
+* **Qualcomm**: In progress on the Galaxy Tab A9+ Wi-Fi (gta9pwifi, SM-X210). On Qualcomm SoC, splash assets are hidden inside a UEFI firmware volume (`imagefv.elf`), making it trickier than MediaTek’s simpler TAR-based partitions.
 
----
 
 ## Content
 

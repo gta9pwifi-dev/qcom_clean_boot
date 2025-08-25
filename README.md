@@ -1,14 +1,14 @@
 # QCOM-Clean-Boot
 
-When you unlock the bootloader on Android devices, you're greeted by an annoying, bright-yellow warning:
+When you unlock the bootloader on Android devices, you're greeted by a bright-yellow warning:
 
 > ⚠️ **"Your device software can't be trusted..."**
 
 
-## Current Status
+# Status
 
 * **MediaTek**: Works. Tested on the Galaxy A14 5G (MT6833)
-* **Qualcomm**: In progress on the Galaxy Tab A9+ Wi-Fi (gta9pwifi, SM-X210). On Qualcomm SoC, splash assets are hidden inside a UEFI firmware volume (`imagefv.elf`), making it trickier than MediaTek’s simpler TAR-based partitions.
+* **Qualcomm**: In progress on the Galaxy Tab A9+ Wi-Fi (gta9pwifi, SM-X210). On Qualcomm SoC, splash assets are hidden inside a UEFI firmware volume (`imagefv.elf`), making it less simple than dealing with MediaTek TAR-based partitions
 
 
 ## Content
@@ -23,7 +23,7 @@ When you unlock the bootloader on Android devices, you're greeted by an annoying
 ├── custom_logo*.jpg.jpg          # Modified images (edited splash screens)
 ├── orange_state*.jpg.jpg
 ├── logo_gen_qcom.py              # Qualcomm splash generator (reference from [Codelinaro](https://git.codelinaro.org/clo/la/device/qcom/common/-/tree/qcom-devices.lnx.14.0.r12-rel/display/logo?ref_type=heads))
-└── README.md                     # This file
+└── README.md                    
 ```
 
 ---
@@ -34,10 +34,10 @@ When you unlock the bootloader on Android devices, you're greeted by an annoying
 
 | Step           | Command / Tool                                                | Notes                                                    |
 | -------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
-| Dump partition | `dd if=/dev/block/by-name/up_param of=/sdcard/up_param.img`   | Verify the partition name first           |
-| Extract        | `tar xvf up_param.img`                                        | Images revealed: `booting_warning.jpg`, `svb_orange.jpg` |
-| Edit           | GIMP/Krita (fill with black or replace images)                | Check tolerance tips                     |
-| Repack         | `tar -cvf up_param.tar *.jpg` → rename back to `up_param.img` |                                                          |
+| Dump partition | `dd if=/dev/block/by-name/up_param of=/sdcard/up_param.img`   | Verify the partition name           |
+| Extract        | `tar xvf up_param.img`                                        | Images: `booting_warning.jpg`, `svb_orange.jpg` |
+| Edit           | GIMP/Krita (fill with black or replace images)                | Check tolerance                     |
+| Repack         | `tar -cvf up_param.tar *.jpg` → rename to `up_param.img` |                                                          |
 | Flash back     | `dd if=/sdcard/up_param.img of=/dev/block/by-name/up_param`   |                                                          |
 | Result       | Boot with no warning                                          | Confirmed on A14 5G                                      |
 
@@ -54,7 +54,7 @@ imagefv.elf
 ```
 
 **Limitation**:
-7-Zip can *view* but not modify these files. UEFITool also doesn't currently support replacing these images due to parser limitations
+7-Zip can *view* but not modify these files. UEFITool also doesn't  support replacing these images due to parser limitations
 
 **What's working & what's not**:
 
@@ -69,13 +69,13 @@ imagefv.elf
 
 ## Qualcomm Splash Generation (`logo_gen_qcom.py`)
 
-This script creates a classic Qualcomm `splash.img`, embedding the standard Qualcomm "SPLASH!!" header and dimensions, optionally using RLE compression.
+This script creates a Qualcomm `splash.img`, embedding the standard Qualcomm "SPLASH!!" header and dimensions, optionally using RLE compression.
 
 ```bash
 python3 logo_gen_qcom.py my_logo.png # → splash.img
 ```
 
-**Note:** Samsung Snapdragon devices don't have a dedicated `logo` partition. Instead, they store splash images within `imagefv.elf`. This script works for the devices with logo/splash partitions (like OnePlus).
+**Note:** Samsung Snapdragon devices don't have a dedicated `logo` partition, they store splash images in `imagefv.elf`. This script works for the devices with logo/splash partitions (like OnePlus)
 
 ---
 
@@ -89,12 +89,12 @@ python3 logo_gen_qcom.py my_logo.png # → splash.img
 
 ---
 
-## Reproducing Current Issue (Qualcomm Path)
+## Reproducing Current Status
 
 ```bash
 adb shell su
-dd if=/dev/block/by-name/imagefv of=/sdcard/imagefv.elf  # ✔ Dump works fine
-binwalk -e imagefv.elf                                   # ✔ Finds FV header at offset 0x8
+dd if=/dev/block/by-name/imagefv of=/sdcard/imagefv.elf  # Dump works fine
+binwalk -e imagefv.elf                                   # Finds FV header at offset 0x8
 7z x imagefv.elf                                         # CLI refuses to extract (not supported)
 mogrify -fill black -colorize 100% custom_logo*.jpg.jpg orange_state*.jpg.jpg # Images modified with ImageMagick
 UEFITool (Win32) displays images clearly but `Replace body` option disabled  # Stuck here

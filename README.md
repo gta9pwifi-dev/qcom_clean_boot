@@ -1,14 +1,12 @@
-# QCOM-Clean-Boot
+# qcom-clean-boot
 
-When you unlock the bootloader on Android devices, you're greeted by a bright-yellow warning:
-
-> ⚠️ **"Your device software can't be trusted..."**
+When you unlock the bootloader on Android devices, you're greeted by a bright-yellow warning
 
 
 # Status
 
-* **MediaTek**: Works. Tested on the Galaxy A14 5G (MT6833)
-* **Qualcomm**: In progress on the Galaxy Tab A9+ Wi-Fi (gta9pwifi, SM-X210). On Qualcomm SoC, splash assets are hidden inside a UEFI firmware volume (`imagefv.elf`), making it less simple than dealing with MediaTek TAR-based partitions
+* **MediaTek**: Works. Tested.
+* **Qualcomm**: In progress on the Galaxy Tab A9+ Wi-Fi (gta9pwifi, SM-X210). On Qualcomm SoC, splash assets are placed inside a UEFI firmware volume (`imagefv.elf`), making it less simple than dealing with MediaTek TAR-based partitions
 
 
 ## Content
@@ -30,7 +28,7 @@ When you unlock the bootloader on Android devices, you're greeted by a bright-ye
 
 ## MediaTek (`up_param.img`)
 
-**Simple and confirmed working.**
+**Simple and confirmed**
 
 | Step           | Command / Tool                                                | Notes                                                    |
 | -------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
@@ -39,13 +37,13 @@ When you unlock the bootloader on Android devices, you're greeted by a bright-ye
 | Edit           | GIMP/Krita (fill with black or replace images)                | Check tolerance                     |
 | Repack         | `tar -cvf up_param.tar *.jpg` → rename to `up_param.img` |                                                          |
 | Flash back     | `dd if=/sdcard/up_param.img of=/dev/block/by-name/up_param`   |                                                          |
-| Result       | Boot with no warning                                          | Confirmed on A14 5G                                      |
+| Result       | Boot with no warning                                          |                                             |
 
 ---
 
 ## Qualcomm: (`imagefv.elf`)
 
-On Qualcomm devices, boot splash images are embedded differently:
+On QC samsung devices, boot splash images are embedded differently:
 
 ```
 imagefv.elf
@@ -54,11 +52,11 @@ imagefv.elf
 ```
 
 **Limitation**:
-7-Zip can *view* but not modify these files. UEFITool also doesn't  support replacing these images due to parser limitations
+7-Zip can *view* but not modify these files. UEFITool also doesn't support replacing these images due to parser limitations
 
 **What's working & what's not**:
 
-| Method Attempted                | Result                                                                                             |
+| Method                 | Result                                                                                             |
 | ------------------------------- | -------------------------------------------------------------------------------------------------- |
 | **7-Zip GUI**                   | Can view contents but refuses modification (`Not supported`)                                       |
 | **UEFITool NE**                 | Option to `Replace body` is grayed out                                               |
@@ -69,7 +67,7 @@ imagefv.elf
 
 ## Qualcomm Splash Generation (`logo_gen_qcom.py`)
 
-This script creates a Qualcomm `splash.img`, embedding the standard Qualcomm "SPLASH!!" header and dimensions, optionally using RLE compression.
+This script creates a Qualcomm `splash.img`, embedding the standard Qualcomm "SPLASH!!" header and dimensions.
 
 ```bash
 python3 logo_gen_qcom.py my_logo.png # → splash.img
@@ -78,25 +76,24 @@ python3 logo_gen_qcom.py my_logo.png # → splash.img
 **Note:** Samsung Snapdragon devices don't have a dedicated `logo` partition, they store splash images in `imagefv.elf`. This script works for the devices with logo/splash partitions (like OnePlus)
 
 ---
+ 
 
-## Roadblocks 
-
-| Issue                      | Why it's a problem         | Possible solution(s)                                              |
-| -------------------------- | -------------------------- | ----------------------------------------------------------------- |
-| No `uefiextract` in Ubuntu | Can't extract FV easily    | Build from source or switch to \[Magic-Splash-Wand]\ |
-| 7-Zip CLI limitation       | Can't modify FV            | Stick to specialized UEFI tools (UEFITool CLI/GUI)                |
-| Finding Correct GUIDs      | Needed for proper patching | Use `strings` command or deep-grep the extracted content          |
+| Issue                      | Why it's a problem         | 
+| -------------------------- | -------------------------- |
+| No `uefiextract` in Ubuntu | Can't extract FV easily    | 
+| 7-Zip CLI limitation       | Can't modify FV            |
+| Finding proper GUIDs      | Needed for proper patching |
 
 ---
 
-## Reproducing Current Status
+## Reproduce
 
 ```bash
 adb shell su
-dd if=/dev/block/by-name/imagefv of=/sdcard/imagefv.elf  # Dump works fine
+dd if=/dev/block/by-name/imagefv of=/sdcard/imagefv.elf  # Can also retrieve from BL firware archive
 binwalk -e imagefv.elf                                   # Finds FV header at offset 0x8
-7z x imagefv.elf                                         # CLI refuses to extract (not supported)
-mogrify -fill black -colorize 100% custom_logo*.jpg.jpg orange_state*.jpg.jpg # Images modified with ImageMagick
+7z x imagefv.elf                                         # Terminal refuses to extract (not supported)
+mogrify -fill black -colorize 100% custom_logo*.jpg.jpg orange_state*.jpg.jpg # Modify with ImageMagick
 UEFITool (Win32) displays images clearly but `Replace body` option disabled  # Stuck here
 ```
 
